@@ -1,146 +1,39 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>AR TV 55" Vertical — marcador hiro</title>
+<html>
+  <head>
+    <title>AR Video Experience</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/ar-aframe.js"></script>
+  </head>
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene
+      vr-mode-ui="enabled: false"
+      renderer="logarithmicDepthBuffer: true;"
+      embedded
+      arjs="sourceType: webcam; debugUIEnabled: false;"
+    >
+      <a-assets>
+        <video
+          id="myvideo"
+          src="video.mp4"
+          autoplay
+          loop
+          crossorigin="anonymous"
+          playsinline
+        ></video>
+      </a-assets>
 
-  <!-- A-Frame + AR.js -->
-  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+      <a-marker preset="hiro">
+        <a-video
+          src="#myvideo"
+          width="1.2"
+          height="2.133"
+          position="0 0 0"
+          rotation="90 0 0"
+        ></a-video>
+      </a-marker>
 
-  <style>
-    html, body { margin:0; padding:0; height:100%; background:#000; }
-    #unmuteOverlay {
-      position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
-      background: rgba(0,0,0,0.85); color: #fff; z-index: 9999; text-align: center; padding: 24px;
-      transition: opacity .25s ease;
-    }
-    #unmuteOverlay button {
-      border: 0; padding: 12px 20px; font-size: 16px; border-radius: 14px; cursor: pointer;
-    }
-    #muteToggle {
-      position: fixed; right: 12px; bottom: 12px; z-index: 9998;
-      border: 0; border-radius: 999px; padding: 10px 14px; font-size: 14px; cursor: pointer;
-      background: rgba(255,255,255,.9);
-    }
-  </style>
-</head>
-<body>
-  <button id="muteToggle" hidden>🔇 Silencio</button>
-
-  <div id="unmuteOverlay">
-    <div>
-      <h1 style="margin:0 0 12px; font-size: 20px;">Toca para activar el sonido</h1>
-      <p style="margin:0 0 16px; opacity:.85;">Por políticas de los navegadores móviles, el video inicia en silencio. Toca el botón para habilitar audio.</p>
-      <button id="enableSound">Activar sonido</button>
-    </div>
-  </div>
-
-  <a-scene
-    vr-mode-ui="enabled: false"
-    embedded
-    renderer="antialias: true; alpha: true"
-    arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
-    cursor="rayOrigin: mouse"
-  >
-    <a-assets>
-      <video id="promoVideo"
-             src="video.mp4"
-             preload="auto"
-             autoplay
-             loop
-             muted
-             playsinline
-             webkit-playsinline
-             crossorigin="anonymous"
-      ></video>
-    </a-assets>
-
-    <!-- Iluminación -->
-    <a-entity light="type: ambient; intensity: 1"></a-entity>
-
-    <a-marker type="pattern" preset="hiro" size="0.20">
-      <!--
-        TV vertical de 55 pulgadas en formato 9:16
-        55" diagonal con relación 9:16 ≈ ancho 0.686 m y alto 1.218 m.
-      -->
-
-      <!-- Marco negro -->
-      <a-plane id="tvFrame"
-               position="0 0 -0.01"
-               rotation="0 0 0"
-               width="0.72"
-               height="1.25"
-               color="#000"
-               material="shader: flat; side: double"
-      ></a-plane>
-
-      <!-- Pantalla principal (video en 9:16) -->
-      <a-video id="tvScreen"
-               src="#promoVideo"
-               position="0 0 0"
-               rotation="0 0 0"
-               width="0.686"
-               height="1.218"
-               material="shader: flat; side: front"
-      ></a-video>
-
-      <!-- Base soporte -->
-      <a-box position="0 -0.72 0" depth="0.04" height="0.04" width="0.40" color="#111"></a-box>
-      <a-box position="0 -0.62 0" depth="0.04" height="0.20" width="0.10" color="#111"></a-box>
-    </a-marker>
-
-    <a-entity camera></a-entity>
-  </a-scene>
-
-  <script>
-    (function(){
-      const video = document.getElementById('promoVideo');
-      const overlay = document.getElementById('unmuteOverlay');
-      const enableBtn = document.getElementById('enableSound');
-      const muteToggle = document.getElementById('muteToggle');
-
-      const tryPlay = () => {
-        if (!video) return;
-        const p = video.play();
-        if (p && typeof p.then === 'function') {
-          p.then(() => {
-            muteToggle.hidden = false;
-            muteToggle.textContent = video.muted ? '🔇 Silencio' : '🔊 Sonando';
-          }).catch(() => {});
-        }
-      };
-
-      video.setAttribute('playsinline', '');
-      video.setAttribute('webkit-playsinline', '');
-
-      video.addEventListener('loadeddata', tryPlay, {once:true});
-
-      const enableSound = () => {
-        video.muted = false;
-        tryPlay();
-        overlay.style.opacity = '0';
-        setTimeout(() => { overlay.style.display = 'none'; }, 250);
-        muteToggle.hidden = false;
-        muteToggle.textContent = '🔊 Sonando';
-      };
-
-      enableBtn.addEventListener('click', enableSound);
-      document.addEventListener('click', enableSound, { once: true });
-      document.addEventListener('touchstart', enableSound, { once: true });
-
-      muteToggle.addEventListener('click', () => {
-        video.muted = !video.muted;
-        tryPlay();
-        muteToggle.textContent = video.muted ? '🔇 Silencio' : '🔊 Sonando';
-      });
-
-      tryPlay();
-    })();
-  </script>
-</body>
+      <a-entity camera></a-entity>
+    </a-scene>
+  </body>
 </html>
-
-
