@@ -7,7 +7,6 @@
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
-      /* Estilos para el texto de carga o indicaciones si los quisieras */
       #loading-text {
         position: fixed;
         top: 50%;
@@ -25,8 +24,7 @@
     </style>
   </head>
   <body>
-    <div id="loading-text">Cargando experiencia AR... por favor, escanea el marcador hiro 
-</div>
+    <div id="loading-text">Cargando experiencia AR... por favor, escanea el marcador hiro</div>
 
     <a-scene
       vr-mode-ui="enabled: false"
@@ -52,10 +50,11 @@
       <a-marker preset="hiro">
         <a-video
           src="#myvideo"
-          width="0.8"
-          height="1.422" 
+          width="0.32"
+          height="0.57" 
           position="0 0 0"
-          rotation="90 0 0"
+          rotation="-90 0 180"
+          scale="-1 1 1"
         ></a-video>
       </a-marker>
 
@@ -99,4 +98,3 @@
     </script>
   </body>
 </html>
-
