@@ -60,49 +60,32 @@
 
     <!-- Iluminación -->
     <a-entity light="type: ambient; intensity: 1"></a-entity>
-    <a-entity light="type: point; intensity: 0.6; distance: 3; decay: 2; color: #00ffff" position="0 0 0.5"></a-entity>
 
     <a-marker type="pattern" preset="hiro" size="0.20">
-      <!-- Marco profesional con bisel y halo -->
+      <!--
+        TV vertical de 55 pulgadas en formato 9:16
+        55" diagonal con relación 9:16 ≈ ancho 0.686 m y alto 1.218 m.
+      -->
 
-      <!-- Bisel exterior (borde más grueso y elegante) -->
-      <a-plane id="tvOuterFrame"
-               position="0 0 -0.02"
+      <!-- Marco negro -->
+      <a-plane id="tvFrame"
+               position="0 0 -0.01"
                rotation="0 0 0"
-               width="0.74"
-               height="1.27"
-               color="#111"
-               material="shader: flat; side: double; emissive: #111"
+               width="0.72"
+               height="1.25"
+               color="#000"
+               material="shader: flat; side: double"
       ></a-plane>
 
-      <!-- Halo luminoso alrededor de la TV -->
-      <a-ring id="halo"
-              position="0 0 -0.03"
-              rotation="0 0 0"
-              radius-inner="0.62"
-              radius-outer="0.70"
-              material="color: #00ffff; opacity: 0.25; transparent: true; shader: flat"
-      ></a-ring>
-
-      <!-- Pantalla principal -->
+      <!-- Pantalla principal (video en 9:16) -->
       <a-video id="tvScreen"
                src="#promoVideo"
                position="0 0 0"
                rotation="0 0 0"
-               width="0.667"
-               height="1.187"
+               width="0.686"
+               height="1.218"
                material="shader: flat; side: front"
       ></a-video>
-
-      <!-- Bisel interior más fino -->
-      <a-plane id="tvInnerFrame"
-               position="0 0 -0.005"
-               rotation="0 0 0"
-               width="0.69"
-               height="1.20"
-               color="#000"
-               material="shader: flat; side: double"
-      ></a-plane>
 
       <!-- Base soporte -->
       <a-box position="0 -0.72 0" depth="0.04" height="0.04" width="0.40" color="#111"></a-box>
@@ -159,3 +142,5 @@
   </script>
 </body>
 </html>
+
+
