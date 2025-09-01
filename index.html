@@ -1,23 +1,36 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Experiencia de Realidad Aumentada con Marcador Hiro</title>
+    <title>Experiencia de Realidad Aumentada Optimizada para Móviles</title>
     <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     
     <style>
       body { margin: 0; overflow: hidden; }
       #arjs-video { z-index: -1; }
+      .instructions {
+        position: absolute;
+        top: 20px;
+        width: 100%;
+        text-align: center;
+        color: white;
+        font-family: sans-serif;
+        font-size: 1.5em;
+        text-shadow: 2px 2px 4px #000000;
+      }
     </style>
   </head>
   <body>
-    <a-scene embedded arjs="sourceType: webcam;">
+    <div class="instructions">¡Encuentra el marcador para iniciar!</div>
+
+    <a-scene embedded arjs="sourceType: webcam; detectionMode: mono_and_matrix; patternRatio: 0.7;">
       <a-assets>
-        <video id="videoElement" src="video.mp4" loop="true" muted playsinline webkit-playsinline preload="auto"></video>
+        <video id="videoElement" src="video.mp4" preload="auto" crossorigin="anonymous" playsinline webkit-playsinline></video>
       </a-assets>
 
       <a-marker type="hiro">
         <a-video
+          id="arVideo"
           src="#videoElement"
           width="1"
           height="1.7777"
@@ -31,20 +44,38 @@
     </a-scene>
     
     <script>
-      // Lógica para reproducir/pausar el video al detectar/perder el marcador.
       const video = document.getElementById('videoElement');
+      const arVideo = document.getElementById('arVideo');
+      const instructions = document.querySelector('.instructions');
+
       const marker = document.querySelector('a-marker');
-      
+      let videoPlaying = false;
+
       marker.addEventListener('markerFound', function() {
-        if (video.paused) {
-          video.play();
+        if (!videoPlaying) {
+          instructions.style.display = 'none';
+          video.play().then(() => {
+            console.log("Video started successfully.");
+            videoPlaying = true;
+          }).catch(error => {
+            console.error("Error al iniciar el video:", error);
+          });
         }
       });
       
       marker.addEventListener('markerLost', function() {
-        if (!video.paused) {
+        if (videoPlaying) {
           video.pause();
+          instructions.style.display = 'block';
+          videoPlaying = false;
         }
+      });
+
+      // Lógica para que el video comience automáticamente si no lo hace.
+      document.body.addEventListener('click', function() {
+          if (video.paused) {
+            video.play();
+          }
       });
     </script>
   </body>
