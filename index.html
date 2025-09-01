@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>AR Video Info DOM - Vertical</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.25, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.min.js"></script>
@@ -61,17 +61,8 @@
             displayWidth: 1280; 
             displayHeight: 720;
             debugUIEnabled: false;
-            detectionMode: mono_and_matrix;
-            matrixCodeType: 3x3;
-            trackingMethod: best;
-            smooth: true;
-            smoothCount: 10;
-            smoothTolerance: 0.01;
-            smoothThreshold: 5;
         '
-        vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true;"
-        device-orientation-permission-ui="enabled: false">
+        vr-mode-ui="enabled: false">
         
         <a-assets>
             <video 
@@ -84,46 +75,18 @@
             </video>
         </a-assets>
         
-        <!-- Marcador HIRO optimizado para estabilidad -->
-        <a-marker 
-            preset="hiro" 
-            id="marker"
-            smooth="true"
-            smoothCount="10"
-            smoothTolerance="0.01"
-            smoothThreshold="5"
-            raycaster="objects: .clickable">
-            
-            <!-- Grupo contenedor para mejor estabilidad -->
-            <a-entity id="videoContainer" position="0 0 0.1">
-                <a-video
-                    src="#arVideo"
-                    width="2.5"
-                    height="4.5"
-                    position="0 0 0"
-                    rotation="-90 0 0"
-                    material="transparent: false; alphaTest: 0.1; shader: flat;"
-                    geometry="primitive: plane">
-                </a-video>
-                
-                <!-- Plano invisible para mejorar el tracking -->
-                <a-plane
-                    width="2.5"
-                    height="4.5"
-                    position="0 0 -0.01"
-                    rotation="-90 0 0"
-                    material="transparent: true; opacity: 0"
-                    visible="false">
-                </a-plane>
-            </a-entity>
+        <!-- Usar marcador HIRO -->
+        <a-marker preset="hiro" id="marker">
+            <a-video
+                src="#arVideo"
+                width="2.5"
+                height="4.5"
+                position="0 0 0"
+                rotation="-90 0 0">
+            </a-video>
         </a-marker>
         
-        <a-entity 
-            camera
-            look-controls="enabled: true; reverseMouseDrag: true"
-            wasd-controls="enabled: false"
-            position="0 0 0">
-        </a-entity>
+        <a-entity camera></a-entity>
     </a-scene>
 
     <script>
@@ -131,32 +94,13 @@
         const marker = document.querySelector('#marker');
         const status = document.querySelector('#status');
         const playButton = document.querySelector('#playButton');
-        const videoContainer = document.querySelector('#videoContainer');
         
         let isPlaying = false;
         let markerVisible = false;
         let videoLoaded = false;
-        let trackingStable = false;
-        let stabilityTimer = null;
         
-        // Configurar video para mejor rendimiento
+        // Configurar video
         video.playsInline = true;
-        video.preload = 'metadata';
-        video.setAttribute('playsinline', '');
-        video.setAttribute('webkit-playsinline', '');
-        
-        // Sistema de estabilización
-        function stabilizeTracking() {
-            if (stabilityTimer) clearTimeout(stabilityTimer);
-            trackingStable = false;
-            
-            stabilityTimer = setTimeout(() => {
-                trackingStable = true;
-                if (markerVisible && videoLoaded) {
-                    status.textContent = '✅ Tracking estable - Listo para reproducir';
-                }
-            }, 1000); // Esperar 1 segundo de estabilidad
-        }
         
         // Eventos de carga de video
         video.addEventListener('loadeddata', () => {
@@ -168,55 +112,35 @@
             status.textContent = 'ERROR: Verifica que video.mp4 existe en la carpeta';
         });
         
-        // Eventos del marcador con estabilización
+        // Eventos del marcador
         marker.addEventListener('markerFound', function() {
             markerVisible = true;
-            stabilizeTracking();
-            status.textContent = '🔍 Marcador detectado - Estabilizando...';
-            
-            // Mostrar botón solo cuando esté estable
-            setTimeout(() => {
-                if (markerVisible && trackingStable) {
-                    playButton.style.display = 'block';
-                }
-            }, 1200);
+            status.textContent = '¡Marcador HIRO detectado!';
+            playButton.style.display = 'block';
         });
         
         marker.addEventListener('markerLost', function() {
             markerVisible = false;
-            trackingStable = false;
-            if (stabilityTimer) clearTimeout(stabilityTimer);
-            
-            status.textContent = '❌ Marcador perdido - Reenfoca HIRO';
+            status.textContent = 'Marcador perdido - Enfoca HIRO';
             playButton.style.display = 'none';
-            
-            // Pausar video suavemente
-            setTimeout(() => {
-                if (!markerVisible) {
-                    pauseVideo();
-                }
-            }, 500);
+            pauseVideo();
         });
         
-        // Botón de reproducción con validaciones
+        // Botón de reproducción manual
         playButton.addEventListener('click', function() {
-            if (!trackingStable) {
-                status.textContent = '⚠️ Espera - Estabilizando tracking...';
-                return;
-            }
-            
             if (isPlaying) {
                 pauseVideo();
                 this.textContent = '▶ REPRODUCIR';
             } else {
+                // Aquí sí quitamos mute y activamos el audio
                 video.muted = false;
                 video.play().then(() => {
                     isPlaying = true;
                     this.textContent = '⏸ PAUSAR';
-                    status.textContent = '🎵 Reproduciéndose con audio';
+                    status.textContent = 'Reproduciéndose con audio';
                 }).catch(err => {
-                    console.error('❌ Error al reproducir:', err);
-                    status.textContent = '⚠️ Error de reproducción - Reintenta';
+                    console.error('❌ Error al reproducir con audio:', err);
+                    status.textContent = 'ERROR: No se puede reproducir';
                 });
             }
         });
@@ -225,17 +149,7 @@
             video.pause();
             isPlaying = false;
             playButton.textContent = '▶ REPRODUCIR';
-            if (markerVisible && trackingStable) {
-                status.textContent = '⏸️ Video pausado';
-            }
         }
-        
-        // Prevenir pérdida de contexto WebGL
-        window.addEventListener('visibilitychange', function() {
-            if (document.hidden && isPlaying) {
-                pauseVideo();
-            }
-        });
     </script>
 </body>
 </html>
