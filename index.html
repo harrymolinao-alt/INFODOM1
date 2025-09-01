@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Experiencia de Realidad Aumentada Optimizada para Móviles</title>
+    <title>Experiencia de Realidad Aumentada Optimizada</title>
     <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     
@@ -17,15 +17,18 @@
         font-family: sans-serif;
         font-size: 1.5em;
         text-shadow: 2px 2px 4px #000000;
+        z-index: 100;
       }
     </style>
   </head>
   <body>
-    <div class="instructions">¡Encuentra el marcador para iniciar!</div>
+    <div class="instructions">
+      <p>Apunta al marcador para iniciar el video.</p>
+    </div>
 
     <a-scene embedded arjs="sourceType: webcam; detectionMode: mono_and_matrix; patternRatio: 0.7;">
       <a-assets>
-        <video id="videoElement" src="video.mp4" preload="auto" crossorigin="anonymous" playsinline webkit-playsinline></video>
+        <video id="videoElement" src="video.mp4" preload="auto" crossorigin="anonymous" playsinline webkit-playsinline loop muted></video>
       </a-assets>
 
       <a-marker type="hiro">
@@ -35,8 +38,7 @@
           width="1"
           height="1.7777"
           position="0 0 0"
-          rotation="-90 0 0"
-          play="true">
+          rotation="-90 0 0">
         </a-video>
       </a-marker>
 
@@ -44,38 +46,38 @@
     </a-scene>
     
     <script>
-      const video = document.getElementById('videoElement');
-      const arVideo = document.getElementById('arVideo');
+      const videoElement = document.getElementById('videoElement');
       const instructions = document.querySelector('.instructions');
 
       const marker = document.querySelector('a-marker');
-      let videoPlaying = false;
-
+      
+      // Controla la reproducción del video cuando el marcador es encontrado
       marker.addEventListener('markerFound', function() {
-        if (!videoPlaying) {
+        // Usa una promesa para manejar la reproducción
+        videoElement.play().then(() => {
+          console.log("Video started successfully.");
           instructions.style.display = 'none';
-          video.play().then(() => {
-            console.log("Video started successfully.");
-            videoPlaying = true;
-          }).catch(error => {
-            console.error("Error al iniciar el video:", error);
-          });
-        }
+        }).catch(error => {
+          console.error("Error al iniciar el video:", error);
+          // Si el video falla al reproducirse automáticamente, pide interacción del usuario
+          instructions.innerHTML = '<p>Toca la pantalla para iniciar el video.</p>';
+          instructions.style.display = 'block';
+        });
       });
       
+      // Pausa el video cuando el marcador se pierde
       marker.addEventListener('markerLost', function() {
-        if (videoPlaying) {
-          video.pause();
-          instructions.style.display = 'block';
-          videoPlaying = false;
-        }
+        videoElement.pause();
+        videoElement.currentTime = 0; // Opcional: regresa el video al inicio
+        instructions.innerHTML = '<p>Apunta al marcador para iniciar el video.</p>';
+        instructions.style.display = 'block';
       });
 
-      // Lógica para que el video comience automáticamente si no lo hace.
+      // Lógica de respaldo para la interacción del usuario
       document.body.addEventListener('click', function() {
-          if (video.paused) {
-            video.play();
-          }
+        if (videoElement.paused) {
+          videoElement.play();
+        }
       });
     </script>
   </body>
